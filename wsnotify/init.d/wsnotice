@@ -1,0 +1,59 @@
+#!/bin/sh
+# Start/stop notice website update for websocket.
+#
+### BEGIN INIT INFO 
+# Provides:          wsnotice 
+# Default-Start:     2 3 4 5 
+# Default-Stop:      0 1 6
+# Description:       notice website at update for websocket.
+### END INIT INFO 
+
+. /lib/lsb/init-functions
+
+HOMEDIR=/home/dictoss
+
+NAME=wsnotice
+DAEMON=${HOMEDIR}/.nodebrew/current/bin/node
+DAEMON_ARGS=${HOMEDIR}/repo/github_dictoss/osmmarkerstorage/wsnotify/src/ws_notify.js
+PIDFILE=/var/run/wsnotice.pid
+LOGFILE=/var/log/wsnotice.log
+
+
+start() {
+    log_daemon_msg "Starting: " "${NAME}"
+    start-stop-daemon --pidfile ${PIDFILE} --make-pidfile --background --exec ${DAEMON} --start -- ${DAEMON_ARGS}
+    log_end_msg $?
+}
+
+stop() {
+    log_daemon_msg "Stoping: " "${NAME}"
+    start-stop-daemon --stop --pidfile ${PIDFILE}
+    log_end_msg $?
+}
+
+status() {
+    status_of_proc -p ${PIDFILE} ${DAEMON} ${NAME} && exit 0 || exit $?
+}
+
+
+case $1 in
+    start)
+	start
+        ;;
+    stop)
+	stop
+        ;;
+    restart)
+	$0 stop
+	$0 start
+	;;
+    status)
+	status
+        ;;
+    *)
+	echo "Usage: $0 {start|stop|restart|status}"
+	exit 2
+	;;   
+esac
+
+exit 0
