@@ -5,8 +5,8 @@ from pygments.styles import get_all_styles
 
 class MarkerBase(models.Model):
     id = models.AutoField(primary_key=True)
-    create_dt = models.DateTimeField(auto_now_add=True, auto_now=False)
-    update_dt = models.DateTimeField(auto_now_add=True, auto_now=True)
+    create_dt = models.DateTimeField(auto_now_add=True)
+    update_dt = models.DateTimeField(auto_now=True)
     name = models.TextField()
     x = models.TextField()
     y = models.TextField()
