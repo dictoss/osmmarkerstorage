@@ -11,6 +11,8 @@ urlpatterns = patterns('markerstorage.views',
     url(r'^osm/marker2.html', 'osm_marker2'),
     url(r'^osm/marker2.json', 'osm_marker2_json'),
     url(r'^osm/marker3.html', 'osm_marker3'),
+    url(r'^osm/tile1.html', 'osm_tile1'),
+    url(r'^osm/tile1/(?P<tile_z>[0-9])/(?P<tile_x>[0-9])/(?P<tile_y>[0-9]).png', 'osm_tile1_image'),
     url(r'^osm/$', 'osm_index'),
 )
 

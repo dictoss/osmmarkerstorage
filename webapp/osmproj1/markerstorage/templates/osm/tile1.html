@@ -1,0 +1,68 @@
+<html>
+<head>
+<title>test tile 1 | test osm</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+</head>
+<script src="/static/js/OpenLayers/OpenLayers.js"></script>
+<script type="text/javascript">
+function init(){
+    // マップのオプション設定
+    var options = {
+        controls:[
+            new OpenLayers.Control.Navigation(
+               {mouseWheelOptions: {interval: 100}}),
+            new OpenLayers.Control.PanZoomBar(),
+            new OpenLayers.Control.KeyboardDefaults(),
+            new OpenLayers.Control.LayerSwitcher(),
+            new OpenLayers.Control.Attribution()
+        ],
+        // 移動できる範囲を日本付近に設定
+        restrictedExtent:new OpenLayers.Bounds(122.0, 24.0, 155.0, 46.0)
+                                       .transform(
+                                           new OpenLayers.Projection("EPSG:4326"),
+                                           new OpenLayers.Projection("EPSG:900913")
+                                       )
+    };
+
+    // マップの初期化(オプション付与)
+    var map = new OpenLayers.Map("canvas", options);
+    map.addControl(new OpenLayers.Control.Attribution());
+
+    var mapnik = new OpenLayers.Layer.OSM();
+
+    var snd = new OpenLayers.Layer.TMS(
+       "test tile data", 
+       "/markerstorage/osm/tile1/",
+       {layername: "tile1", 
+        isBaseLayer: false,
+        type: "png",
+        alpha: true,
+        displayOutsideMaxExtent: true,
+        opacity: 0.5,
+        attribution: '<a href="/static/images/tiletest.png">test ping image</a>'
+        //tileOrigin
+        //serverResolutions
+        //zoomOffset
+       }
+    );
+
+    map.addLayers([mapnik, snd]);
+
+    // 地図の中央座標を指定
+    // 北海道旭川市
+    //var lonLat = new OpenLayers.LonLat(142.368, 43.760).transform(
+    // 東京都
+    var lonLat = new OpenLayers.LonLat(139.0, 35.0).transform(
+                                   new OpenLayers.Projection("EPSG:4326"),
+                                   new OpenLayers.Projection("EPSG:900913")
+                              );
+
+    // 中央とズーム値を指定
+    map.setCenter(lonLat, 7);
+}
+</script>
+<body onload="init()">
+<div id="title"><h1>test tile1</h1></div>
+<div id="canvas"></div>
+</body>
+</html>
