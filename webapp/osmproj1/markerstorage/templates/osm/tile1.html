@@ -32,8 +32,9 @@ function init(){
 
     var snd = new OpenLayers.Layer.TMS(
        "test tile data", 
-       "/markerstorage/osm/tile1/",
-       {layername: "tile1", 
+       "{{ mount_prefix }}/markerstorage/osm/tiles/",
+       {layername: "testtile1",
+        serviceVersion: "1",
         isBaseLayer: false,
         type: "png",
         alpha: true,

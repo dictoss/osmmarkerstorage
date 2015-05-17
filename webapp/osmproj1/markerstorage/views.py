@@ -202,7 +202,7 @@ def osm_tile1(request):
         {'key1': 'value1'})
 
 
-def osm_tile1_image(request, tile_z, tile_x, tile_y):
+def osm_tile1_image(request, tile_ver, tile_z, tile_x, tile_y):
     response = HttpResponse()
     response['Content-Type'] = 'image/png'
 
