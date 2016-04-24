@@ -28,6 +28,6 @@ REST_PUT_PASSWORD = 'qwerty'
 
 
 try:
-    from markerstorage_settings_devel import *
+    from .markerstorage_settings_devel import *
 except:
     pass

@@ -213,7 +213,7 @@ def osm_tile1_image(request, tile_ver, tile_z, tile_x, tile_y):
         with open(filepath, 'rb') as f:
             response.write(f.read())
     except:
-        print("EXCEPT: %s" % (sys.exc_info()[1]))
+        print(("EXCEPT: %s" % (sys.exc_info()[1])))
 
     return response
 
