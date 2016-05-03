@@ -16,11 +16,11 @@ class DummyClient(WebSocketClient):
         print(senddata)
 
     def closed(self, code, reason):
-        print("Closed down %s %s" % (code, reason))
+        print(("Closed down %s %s" % (code, reason)))
 
     def received_message(self, m):
-        print("=> %d %s" % (len(m), str(m)))
-        print
+        print(("=> %d %s" % (len(m), str(m))))
+        print()
         if len(str(m)) == 175:
             self.close(reason='Bye bye')
 
