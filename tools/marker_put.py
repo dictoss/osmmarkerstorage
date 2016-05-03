@@ -1,10 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 import sys
 import json
 import datetime
 import time
-import urllib
-import urllib2
+import urllib.request
+import urllib.parse
+import urllib.error
 
 MP_URL = 'http://192.168.22.102:8000/markerstorage/markerdata/0/'
 #MP_URL = 'http://192.168.22.30/osmproj1/markerstorage/markerdata/0/'
@@ -25,18 +26,18 @@ def put_markerobject():
 
     try:
         query_args = {'password': MP_POST_PASS}
-        encode_url_param = urllib.urlencode(query_args)
+        encode_url_param = urllib.parse.urlencode(query_args)
 
-        req = urllib2.Request('%s?%s' % (MP_URL, encode_url_param))
+        req = urllib.request.Request('%s?%s' % (MP_URL, encode_url_param))
         req.add_header('Content-Type', 'application/json; charset=utf-8')
         req.method = 'POST'
-        req.data = json.dumps(payload)
+        req.data = json.dumps(payload).encode()
 
-        r = urllib2.urlopen(req)
+        r = urllib.request.urlopen(req)
         print('send PUT request.')
-        print('status code: %s' % (r.code))
+        print(('status code: %s' % (r.code)))
     except:
-        print('EXCEPT: fail PUT (%s)' % sys.exc_info()[1])
+        print(('EXCEPT: fail PUT (%s)' % sys.exc_info()[1]))
 
     return
 
