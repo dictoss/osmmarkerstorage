@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
 import sys
@@ -8,13 +7,14 @@ import time
 from time import *
 import logging
 
+# pip install django
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.template import loader, Context, RequestContext
-
+# pip install djangorestframework markdown django-filter
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
-
+# pip install ws4py
 from ws4py.client.threadedclient import WebSocketClient
 
 from markerstorage.models import *
@@ -245,7 +245,7 @@ class DummyClient(WebSocketClient):
                     'param': {
                         'token': markerstorage_settings.WSPUSH_SENDTOKEN}
                     }
-        self.send(json.dumps(senddata))
+        self.send(json.dumps(senddata).encode())
 
     def closed(self, code, reason):
         logger.info(
@@ -253,10 +253,9 @@ class DummyClient(WebSocketClient):
             (code, reason))
 
     def received_message(self, m):
-        logger.info('message received: %s' % m.data)
-
         try:
-            convjson = json.loads(m.data)
+            convjson = json.loads(m.data.decode())
+            logger.info('message received: %s' % convjson)
 
             if convjson['func'] == 'auth':
                 if convjson['statuscode'] == '200':
@@ -276,7 +275,7 @@ class DummyClient(WebSocketClient):
                               'markerlist': markerlist}
                     }
         logger.info(senddata)
-        self.send(json.dumps(senddata))
+        self.send(json.dumps(senddata).encode())
 
     def is_auth(self):
         return self._is_auth
