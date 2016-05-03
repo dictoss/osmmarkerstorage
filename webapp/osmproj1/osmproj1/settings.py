@@ -88,6 +88,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 try:
-    from settings_devel import *
+    from .settings_devel import *
 except:
     pass
