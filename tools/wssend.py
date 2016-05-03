@@ -1,5 +1,5 @@
 #!/usr/bin/python
-#
+# -*- coding: utf-8 -*-
 import sys
 import json
 import datetime
@@ -16,10 +16,10 @@ class DummyClient(WebSocketClient):
         print(senddata)
 
     def closed(self, code, reason):
-        print "Closed down", code, reason
+        print(("Closed down", code, reason))
 
     def received_message(self, m):
-        print "=> %d %s" % (len(m), str(m))
+        print(("=> %d %s" % (len(m), str(m))))
         if len(str(m)) == 175:
             self.close(reason='Bye bye')
 
@@ -27,20 +27,21 @@ class DummyClient(WebSocketClient):
         _seq = 1000
 
         senddata = {'func': 'broadcast_msg',
-                    'param': {'markertype': 'testobject1', 
-                              'markerlist': [
-                    {'id': _seq,
-                     'create_dt':  datetime.datetime.now().isoformat(),
-                     'update_dt':  datetime.datetime.now().isoformat(),
-                     'name': 'object%d' % (_seq),
-                     'x': '142.370',
-                     'y': '43.765',
-                     'auther': 'dictoss',
-                     'desc': 'test messge'}
-                    ]
-                              }
+                    'param': {
+                        'markertype': 'testobject1',
+                        'markerlist': [
+                            {'id': _seq,
+                             'create_dt':  datetime.datetime.now().isoformat(),
+                             'update_dt':  datetime.datetime.now().isoformat(),
+                             'name': 'object%d' % (_seq),
+                             'x': '142.370',
+                             'y': '43.765',
+                             'auther': 'dictoss',
+                             'desc': 'test messge'}
+                        ]
                     }
-        self.send(json.dumps(senddata))
+                }
+        self.send(json.dumps(senddata).encode())
         print(senddata)
 
 
@@ -51,7 +52,7 @@ def main():
         ws.connect()
 
         while True:
-            line = raw_input()
+            line = sys.stdin.readline()
             print("stdin!")
             ws.sendmsg()
 
@@ -59,7 +60,7 @@ def main():
         ws.close()
         return 0
     except:
-        print("EXCEPT: %s" % sys.exc_info()[1])
+        print(("EXCEPT: %s" % sys.exc_info()[1]))
         return 1
 
 
