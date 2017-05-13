@@ -1,10 +1,11 @@
+{% load static %}
 <html>
 <head>
 <title>test osm</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 </head>
-<script src="/static/js/jquery-1.11.1.js"></script>
-<script src="/static/js/OpenLayers/OpenLayers.js"></script>
+<script src="{% static 'js/jquery-1.11.1.js' %}"></script>
+<script src="{% static 'js/OpenLayers/OpenLayers.js' %}"></script>
 <script type="text/javascript">
 var g_ws = null;
 var g_wsurl = "{{ wspush_url }}";
