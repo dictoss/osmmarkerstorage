@@ -223,10 +223,6 @@ def my_render_to_response(request, template_file, paramdict):
     response = HttpResponse()
     paramdict['mount_prefix'] = markerstorage_settings.MOUNT_PREFIX
 
-    # t = loader.get_template(template_file)
-    # c = RequestContext(request, paramdict)
-    # response.write(t.render(c))
-
     _gen_html = render_to_string(template_file,
                                  context=paramdict,
                                  request=request)
