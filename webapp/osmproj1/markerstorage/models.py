@@ -1,5 +1,3 @@
-from pygments.lexers import get_all_lexers
-from pygments.styles import get_all_styles
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 
