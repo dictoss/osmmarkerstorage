@@ -10,7 +10,8 @@ import logging
 # pip install django
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.template import loader, Context, RequestContext
+from django.template import loader
+from django.template.loader import render_to_string
 # pip install djangorestframework markdown django-filter
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
@@ -222,9 +223,14 @@ def my_render_to_response(request, template_file, paramdict):
     response = HttpResponse()
     paramdict['mount_prefix'] = markerstorage_settings.MOUNT_PREFIX
 
-    t = loader.get_template(template_file)
-    c = RequestContext(request, paramdict)
-    response.write(t.render(c))
+    # t = loader.get_template(template_file)
+    # c = RequestContext(request, paramdict)
+    # response.write(t.render(c))
+
+    _gen_html = render_to_string(template_file,
+                                 context=paramdict,
+                                 request=request)
+    response.write(_gen_html)
     return response
 
 
