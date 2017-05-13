@@ -12,15 +12,12 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.template import loader
 from django.template.loader import render_to_string
-# pip install djangorestframework markdown django-filter
-from rest_framework.renderers import JSONRenderer
-from rest_framework.parsers import JSONParser
+
 # pip install ws4py
 from ws4py.client.threadedclient import WebSocketClient
 
-from markerstorage.models import *
-from markerstorage.serializers import *
 from markerstorage import markerstorage_settings
+from .models import DemoMarker
 
 formatter = logging.Formatter(markerstorage_settings.LOG_FORMAT)
 h = logging.FileHandler(markerstorage_settings.LOG_PATH)
@@ -44,9 +41,41 @@ class JSONResponse(HttpResponse):
     An HttpResponse that renders its content into JSON.
     """
     def __init__(self, data, **kwargs):
-        content = JSONRenderer().render(data)
+        content = json.dumps(data)
         kwargs['content_type'] = 'application/json'
         super(JSONResponse, self).__init__(content, **kwargs)
+
+
+def convert_dict_demoarker(o):
+    _a = {'id': o.id,
+          'create_dt': o.create_dt.isoformat(),
+          'update_dt': o.update_dt.isoformat(),
+          'name': o.name,
+          'x': o.x,
+          'y': o.y,
+          'auther': o.auther,
+          'desc': o.desc,
+          'memo': o.memo}
+
+    return _a
+
+
+def convert_dict_demoarkers(qs):
+    _datas = []
+
+    for o in qs:
+        _a = {'id': o.id,
+              'create_dt': o.create_dt.isoformat(),
+              'update_dt': o.update_dt.isoformat(),
+              'name': o.name,
+              'x': o.x,
+              'y': o.y,
+              'auther': o.auther,
+              'desc': o.desc,
+              'memo': o.memo}
+        _datas.append(_a)
+
+    return _datas
 
 
 @csrf_exempt
@@ -55,13 +84,13 @@ def markerdata_list(request):
     List all code snippets, or create a new snippet.
     """
     if request.method == 'GET':
-        demomarkers = DemoMarker.objects.all()
-        serializer = DemoMarkerSerializer(demomarkers, many=True)
-        return JSONResponse(serializer.data)
+        _qs = DemoMarker.objects.all().order_by('-pk')
+        _datas = convert_dict_demoarkers(_qs)
+        return JSONResponse(_datas)
     else:
-        demomarkers = DemoMarker.objects.all()
-        serializer = DemoMarkerSerializer(demomarkers, many=True)
-        return JSONResponse(serializer.data)
+        _qs = DemoMarker.objects.all().order_by('-pk')
+        _datas = convert_dict_demoarkers(_qs)
+        return JSONResponse(_datas)
 
 
 @csrf_exempt
@@ -73,29 +102,31 @@ def markerdata_detail(request, pk):
 
     if request.method == 'GET':
         try:
-            demomarker = DemoMarker.objects.get(pk=pk)
+            _o = DemoMarker.objects.get(pk=pk)
         except DemoMarker.DoesNotExist:
             return HttpResponse(status=404)
 
-        serializer = DemoMarkerSerializer(demomarker)
-        return JSONResponse(serializer.data)
+        _data = convert_dict_demoarker(_o)
+        return JSONResponse(_data)
 
     elif request.method == 'POST':
         logger.debug('POST (pk=%s)' % pk)
 
         # check password
         try:
-            _pass = request.GET['password']
+            _pass = request.GET.get('password', '')
 
             if _pass != markerstorage_settings.REST_PUT_PASSWORD:
-                return JSONResponse(serializer.errors, status=401)
+                return JSONResponse('', status=401)
         except:
             logger.warn('EXCEPT: fail password. (%s)' % sys.exc_info()[1])
-            return JSONResponse(serializer.errors, status=401)
+            return JSONResponse('', status=401)
 
         # insert or update
         try:
-            data = JSONParser().parse(request)
+            _s = request.body.decode('utf-8')
+            data = json.loads(_s)
+            logger.debug(data)
 
             if int(pk) < 1:
                 logger.info('do insert')
@@ -106,38 +137,46 @@ def markerdata_detail(request, pk):
                                      x=data['x'],
                                      y=data['y'],
                                      auther=data['auther'],
-                                     desc=data['desc'])
+                                     desc=data['desc'],
+                                     memo=data['memo'])
                 created.save()
 
-                data['id'] = '%d' % created.id
+                data['id'] = '%d' % (created.id)
 
-                #send websocket message
+                # send websocket message
                 pushdata = [data]
                 notify_websocket(pushdata)
 
-                return JSONResponse(data, status=201)
+                _status = 201
+                _data = data
             else:
                 logger.info('do update')
-                demomarker = DemoMarker.objects.get(pk=pk)
-                serializer = DemoMarkerSerializer(demomarker, data=data)
+                o = DemoMarker.objects.get(pk=pk)
 
-                if serializer.is_valid():
-                    serializer.save()
-                else:
-                    raise
+                o.update_dt = data['update_dt']
+                o.name = data['name']
+                o.x = data['x']
+                o.y = data['y']
+                o.auther = data['auther']
+                o.desc = data['desc']
+                o.memo = data['memo']
 
-                pushdata = [serializer]
+                o.save()
+
+                pushdata = [json.dumps(convert_dict_demoarker(o))]
                 notify_websocket(pushdata)
 
-                return JSONResponse(serializer.data, status=200)
-
+                _status = 200
+                _data = data
         except DemoMarker.DoesNotExist:
             return HttpResponse(status=404)
         except:
             logger.warn('EXCEPT: fail request data parse. (%s)' %
                         sys.exc_info()[1])
+            return JSONResponse('{}', status=400)
 
-        return JSONResponse(serializer.errors, status=400)
+        return JSONResponse(data=_data, status=_status)
+
 
     #elif request.method == 'DELETE':
     #    snippet.delete()
