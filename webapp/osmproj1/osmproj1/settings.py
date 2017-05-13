@@ -101,7 +101,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
-STATIC_URL = '/static/'
+SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
+SITE_NAME = 'markerstorage'
+
+STATIC_URL = '/static/%s/' % SITE_NAME
+STATIC_ROOT = '%s/static/' % SITE_ROOT
 
 try:
     from .settings_devel import *
