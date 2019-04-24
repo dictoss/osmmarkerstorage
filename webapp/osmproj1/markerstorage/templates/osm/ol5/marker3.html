@@ -1,0 +1,170 @@
+{% load static %}
+<html>
+<head>
+<title>test osm</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+</head>
+<script src="{% static 'js/jquery-3.4.0.min.js' %}"></script>
+<script src="{% static 'OpenLayers-2.13.1/OpenLayers.js' %}"></script>
+<script type="text/javascript">
+var g_ws = null;
+var g_wsurl = "{{ wspush_url }}";
+var g_wstoken = "{{ wspush_recvtoken }}";
+
+// マップの初期化(オプション付与)
+var g_map = null;
+
+
+function ws_add_marker(markertype, markerlist){
+    // マーカーを追加
+    var markers = new OpenLayers.Layer.Markers(markertype);
+    g_map.addLayer(markers);
+ 
+    var size = new OpenLayers.Size(21,25);
+    var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
+    var icon = new OpenLayers.Icon("{% static 'OpenLayers-2.13.1/img/marker.png' %}", size, offset);
+
+    for(var i = 0; i < markerlist.length; i++){
+        markers.addMarker(new OpenLayers.Marker(
+            new OpenLayers.LonLat(markerlist[i].x, markerlist[i].y).transform(
+            new OpenLayers.Projection("EPSG:4326"),
+            new OpenLayers.Projection("EPSG:900913"))), icon.clone());
+
+       console.log("ws add marker.")
+    }
+}
+
+function start_websocket(){
+    g_ws = new WebSocket(g_wsurl);
+
+    g_ws.onopen = function(){
+        console.log("IN onopen()");
+
+        // send auth message. 
+        var authmsg = {"func": "auth",
+                       "param": {"token": g_wstoken}};
+        var authmsgstr = JSON.stringify(authmsg);
+        g_ws.send(authmsgstr);
+    }
+
+    g_ws.onclose = function(event){
+        console.log("IN onclose()");
+        console.log("websocket disconnected.");
+    }
+
+    g_ws.onmessage = function(event){
+        console.log("receive message: " + event.data);
+
+        var res = JSON.parse(event.data);
+
+        if((res.func == "auth") && (res.statuscode === "200")){
+            console.log("success auth.");
+        }
+        else if((res.func == "broadcast_msg") && (res.statuscode === "200")){
+            console.log("receive broadcast_msg.");
+
+            // mapping marker
+            ws_add_marker(res.result.makertype, res.result.markerlist);
+        }
+
+        console.log("");
+    }
+
+    window.onunload = function(){
+       var code = 4500;
+       var reason = "client closed.";
+       g_ws.close(code,reason);
+    }
+}
+
+function init(){
+    // マップのオプション設定
+    var options = {
+        controls:[
+            new OpenLayers.Control.Navigation(),
+            new OpenLayers.Control.ZoomPanel(),
+            new OpenLayers.Control.Attribution()
+        ],
+        //restrictedExtent:new OpenLayers.Bounds(139.7, 35.6, 139.8, 35.8)
+        restrictedExtent:new OpenLayers.Bounds(142.3, 43.6, 142.4, 43.8)
+                                       .transform(
+                                           new OpenLayers.Projection("EPSG:4326"),
+                                           new OpenLayers.Projection("EPSG:900913")
+                                       )
+    };
+
+    g_map = new OpenLayers.Map("canvas", options);
+    var mapnik = new OpenLayers.Layer.OSM();
+    g_map.addLayer(mapnik);
+
+    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+
+    var vectorLayer = new OpenLayers.Layer.Vector("描画テスト", {style: layer_style});
+
+
+    // 点の座標を決める
+    var point = new OpenLayers.Geometry.Point(139.760, 35.680);
+
+    // 座標を変換 この処理が新たに必要だった
+    point.transform(
+        new OpenLayers.Projection("EPSG:4326"),
+        g_map.getProjectionObject()
+    );
+    
+    // 点のプロパティ
+    var style_point = {
+        strokeColor: "#FF6347",
+        fillColor: "#FF6347",
+        fillOpacity: 0.2,    // 内側の透明度
+        strokeWidth: 4, // 外周の太さ
+        pointRadius: 10  // 半径
+    };
+    var pointFeature = new OpenLayers.Feature.Vector(point, null, style_point);
+
+
+    // レイヤの追加と描画する図の指定
+    g_map.addLayer(vectorLayer);
+    vectorLayer.addFeatures([pointFeature]);
+
+    // 地図の中央座標を指定
+    // Asahikawa city, Hokkaido, Japan.
+    var map_center_x = 142.368;
+    var map_center_y = 43.760;
+
+    // Tokyo, Japan.
+    //var map_center_x = 0.0;
+    //var map_center_y = 0.0;
+
+    var lonLat = new OpenLayers.LonLat(map_center_x, map_center_y).transform(
+                                   new OpenLayers.Projection("EPSG:4326"),
+                                   new OpenLayers.Projection("EPSG:900913")
+                              );
+
+    $.ajax({
+        type: "GET",
+        dataType: "json",
+        async: true,
+        url: "{{ mount_prefix }}{{ initialmarker_url }}"
+    })
+    .done(function(data) {
+        console.log("done.");
+
+        ws_add_marker("demomarker", data);
+    })
+    .fail(function() {
+        console.warn("Error!!");
+    })
+    .always(function(data) {
+        console.info("jQuery call finished.");
+    });
+
+    // 中央とズーム値を指定
+    g_map.setCenter(lonLat, 15);
+
+    start_websocket();
+}
+</script>
+<body onload="init()">
+<div id="canvas" style="width:600px; height:480px"></div>
+</body>
+</html>

@@ -192,29 +192,29 @@ def osm_index(request):
 def osm_first(request):
     return my_render_to_response(
         request,
-        'osm/first.html',
+        'osm/ol2/first.html',
         {'key1': 'value1'})
 
 
 def osm_marker1(request):
     return my_render_to_response(
         request,
-        'osm/marker1.html',
+        'osm/ol2/marker1.html',
         {'key1': 'value1'})
 
 
 def osm_marker2(request):
     return my_render_to_response(
         request,
-        'osm/marker2.html',
-        {'initialmarker_url': '/markerstorage/osm/marker2.json'}
+        'osm/ol2/marker2.html',
+        {'initialmarker_url': '/markerstorage/osm/ol2/marker2.json'}
         )
 
 
 def osm_marker2_json(request):
     return my_render_to_response(
         request,
-        'osm/marker2.json',
+        'osm/ol2/marker2.json',
         {'key1': 'value1'}
         )
 
@@ -228,7 +228,7 @@ def osm_marker3(request):
 
     return my_render_to_response(
         request,
-        'osm/marker3.html',
+        'osm/ol2/marker3.html',
         {'initialmarker_url': markerstorage_settings.INITIALMARKER_URL,
          'wspush_url': wspush_url,
          'wspush_recvtoken': markerstorage_settings.WSPUSH_RECVTOKEN,
@@ -238,7 +238,7 @@ def osm_marker3(request):
 def osm_tile1(request):
     return my_render_to_response(
         request,
-        'osm/tile1.html',
+        'osm/ol2/tile1.html',
         {'key1': 'value1'})
 
 
