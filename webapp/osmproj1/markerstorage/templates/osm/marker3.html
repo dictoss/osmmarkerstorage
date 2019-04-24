@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 </head>
 <script src="{% static 'js/jquery-3.4.0.min.js' %}"></script>
-<script src="{% static 'js/OpenLayers/OpenLayers.js' %}"></script>
+<script src="{% static 'OpenLayers-2.13.1/OpenLayers.js' %}"></script>
 <script type="text/javascript">
 var g_ws = null;
 var g_wsurl = "{{ wspush_url }}";
@@ -22,7 +22,7 @@ function ws_add_marker(markertype, markerlist){
  
     var size = new OpenLayers.Size(21,25);
     var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
-    var icon = new OpenLayers.Icon("{% static 'js/OpenLayers/img/marker.png' %}", size, offset);
+    var icon = new OpenLayers.Icon("{% static 'OpenLayers-2.13.1/img/marker.png' %}", size, offset);
 
     for(var i = 0; i < markerlist.length; i++){
         markers.addMarker(new OpenLayers.Marker(
