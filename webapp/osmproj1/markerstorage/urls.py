@@ -8,7 +8,7 @@ urlpatterns = [
     url(r'^markerdata/$', views.markerdata_list),
     url(r'^markerdata/(?P<pk>[0-9]+)/$', views.markerdata_detail),
     #
-    url(r'^osm/ol2/index.html', views.osm_index),
+    url(r'^osm/index.html', views.osm_index),
     url(r'^osm/ol2/first.html', views.osm_first),
     url(r'^osm/ol2/marker1.html', views.osm_marker1),
     url(r'^osm/ol2/marker2.html', views.osm_marker2),
