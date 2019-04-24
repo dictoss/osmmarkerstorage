@@ -4,71 +4,45 @@
 <title>test osm</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 </head>
-<script src="{% static 'OpenLayers-2.13.1/OpenLayers.js' %}"></script>
+<script src="{% static 'OpenLayers-5.3.0/ol.js' %}"></script>
 <script type="text/javascript">
-function init(){
-    // マップのオプション設定
-    var options = {
-        controls:[
-            new OpenLayers.Control.Navigation(),
-            new OpenLayers.Control.ZoomPanel(),
-            new OpenLayers.Control.Attribution()
-        ],
-        //restrictedExtent:new OpenLayers.Bounds(139.7, 35.6, 139.8, 35.8)
-        restrictedExtent:new OpenLayers.Bounds(142.3, 43.6, 142.4, 43.8)
-                                       .transform(
-                                           new OpenLayers.Projection("EPSG:4326"),
-                                           new OpenLayers.Projection("EPSG:900913")
-                                       )
-    };
 
+window.onload = function(){
     // マップの初期化(オプション付与)
-    var map = new OpenLayers.Map("canvas", options);
-    var mapnik = new OpenLayers.Layer.OSM();
-    map.addLayer(mapnik);
-
-    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
-
-    var vectorLayer = new OpenLayers.Layer.Vector("描画テスト", {style: layer_style});
-
+    var _map = new ol.Map({
+        target: "canvas",
+        layers: [
+          new ol.layer.Tile({
+            source: new ol.source.OSM()
+          })
+        ],
+        view: new ol.View({
+          center: ol.proj.transform([142.368, 43.760], "EPSG:4326", "EPSG:3857"),
+          zoom: 14
+        })
+    });
 
     // 点の座標を決める
-    var point = new OpenLayers.Geometry.Point(139.760, 35.680);
+    var point = new ol.Feature({
+       geometry: new ol.geom.Point(ol.proj.transform([142.368, 43.760], "EPSG:4326", "EPSG:3857")),
+       name: "test point"
+    });
+    point.setStyle(null);
+    //point = null;
 
-    // 座標を変換 この処理が新たに必要だった
-    point.transform(
-        new OpenLayers.Projection("EPSG:4326"),
-        map.getProjectionObject()
-    );
-    
-    // 点のプロパティ
-    var style_point = {
-        strokeColor: "#FF6347",
-        fillColor: "#FF6347",
-        fillOpacity: 0.2,    // 内側の透明度
-        strokeWidth: 4, // 外周の太さ
-        pointRadius: 10  // 半径
-    };
-    var pointFeature = new OpenLayers.Feature.Vector(point, null, style_point);
-
+    var vectorSource = new ol.source.Vector({
+        features: [point]
+    });
+     
+    var vectorLayer = new ol.layer.Vector({
+        source: vectorSource
+    });
 
     // レイヤの追加と描画する図の指定
-    map.addLayer(vectorLayer);
-    vectorLayer.addFeatures([pointFeature]);
-
-    // 地図の中央座標を指定
-    //var lonLat = new OpenLayers.LonLat(139.76, 35.68).transform(
-    //var lonLat = new OpenLayers.LonLat(139.75, 35.68).transform(
-    var lonLat = new OpenLayers.LonLat(142.368, 43.760).transform(
-                                   new OpenLayers.Projection("EPSG:4326"),
-                                   new OpenLayers.Projection("EPSG:900913")
-                              );
-
-    // 中央とズーム値を指定
-    map.setCenter(lonLat, 15);
+    _map.addLayer(vectorLayer);
 }
 </script>
-<body onload="init()">
-<div id="canvas" style="width:320px; height:480px"></div>
+<body>
+<div id="canvas" style="width:480px; height:480px"></div>
 </body>
 </html>
