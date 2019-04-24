@@ -80,7 +80,7 @@ function init(){
  
         var size = new OpenLayers.Size(21,25);
         var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
-        var icon = new OpenLayers.Icon("http://www.openlayers.org/dev/img/marker.png", size, offset);
+        var icon = new OpenLayers.Icon("{% static 'js/OpenLayers/img/marker.png' %}", size, offset);
 
         for(var i = 0; i < data.markerlist.length; i++ ){
             console.log(i);
