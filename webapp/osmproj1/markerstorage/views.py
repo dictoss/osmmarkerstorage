@@ -258,6 +258,19 @@ def osm_tile1_image(request, tile_ver, tile_z, tile_x, tile_y):
     return response
 
 
+def osm_ol5_first(request):
+    return my_render_to_response(
+        request,
+        'osm/ol5/first.html',
+        {'key1': 'value1'})
+
+
+def osm_ol5_marker1(request):
+    return my_render_to_response(
+        request,
+        'osm/ol5/marker1.html',
+        {'key1': 'value1'})
+
 def my_render_to_response(request, template_file, paramdict):
     response = HttpResponse()
     paramdict['mount_prefix'] = markerstorage_settings.MOUNT_PREFIX
