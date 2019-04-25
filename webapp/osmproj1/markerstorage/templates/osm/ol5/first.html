@@ -23,7 +23,16 @@ window.onload = function(){
         })
     });
 
-    // 点の座標を決める
+    var vectorSource = new ol.source.Vector();
+    var vectorLayer = new ol.layer.Vector({
+        source: vectorSource
+    });
+
+    // レイヤの追加と描画する図の指定
+    _map.addLayer(vectorLayer);
+
+
+    // add point
     var point = new ol.Feature({
        geometry: new ol.geom.Point(ol.proj.transform([142.368, 43.760], "EPSG:4326", "EPSG:3857")),
        name: "test point"
@@ -41,18 +50,25 @@ window.onload = function(){
     });
 
     point.setStyle(style_point);
-    //point = null;
+    vectorSource.addFeature(point);
 
-    var vectorSource = new ol.source.Vector({
-        features: [point]
-    });
-     
-    var vectorLayer = new ol.layer.Vector({
-        source: vectorSource
+
+    // add circle
+    var myCircle = new ol.Feature({
+        geometry: new ol.geom.Circle(
+            ol.proj.transform([142.368, 43.760], "EPSG:4326", "EPSG:3857"), 400),
     });
 
-    // レイヤの追加と描画する図の指定
-    _map.addLayer(vectorLayer);
+    var style_circle = new ol.style.Style({
+        fill: new ol.style.Fill({color: 'rgba(255, 255, 0, 0.5)'}),
+        stroke: new ol.style.Stroke({
+            color: [255, 255, 0],
+            width: 2
+        })
+    });
+
+    myCircle.setStyle(style_circle);
+    vectorSource.addFeature(myCircle);
 }
 </script>
 <body>
