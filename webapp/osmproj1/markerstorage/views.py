@@ -12,6 +12,8 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.template import loader
 from django.template.loader import render_to_string
+from django.utils.decorators import method_decorator
+from django.views import View
 
 # pip install ws4py
 from ws4py.client.threadedclient import WebSocketClient
@@ -78,29 +80,25 @@ def convert_dict_demoarkers(qs):
     return _datas
 
 
-@csrf_exempt
-def markerdata_list(request):
+@method_decorator(csrf_exempt, name="dispatch")
+class MarkerDataListView(View):
     """
     List all code snippets, or create a new snippet.
     """
-    if request.method == 'GET':
-        _qs = DemoMarker.objects.all().order_by('-pk')
-        _datas = convert_dict_demoarkers(_qs)
-        return JSONResponse(_datas)
-    else:
+    def get(self, request):
         _qs = DemoMarker.objects.all().order_by('-pk')
         _datas = convert_dict_demoarkers(_qs)
         return JSONResponse(_datas)
 
 
-@csrf_exempt
-def markerdata_detail(request, pk):
+@method_decorator(csrf_exempt, name="dispatch")
+class MarkerDataDetailView(View):
     """
     Retrieve, update or delete a code snippet.
     """
     demomarker = None
 
-    if request.method == 'GET':
+    def get(self, request, pk):
         try:
             _o = DemoMarker.objects.get(pk=pk)
         except DemoMarker.DoesNotExist:
@@ -109,7 +107,7 @@ def markerdata_detail(request, pk):
         _data = convert_dict_demoarker(_o)
         return JSONResponse(_data)
 
-    elif request.method == 'POST':
+    def post(self, request, pk):
         logger.debug('POST (pk=%s)' % pk)
 
         # check password
@@ -177,99 +175,82 @@ def markerdata_detail(request, pk):
 
         return JSONResponse(data=_data, status=_status)
 
-
-    #elif request.method == 'DELETE':
+    #def delete(self):
     #    snippet.delete()
     #    return HttpResponse(status=204)
 
+class OsmIndexView(View):
+    def get(self, request):
+        return my_render_to_response(
+            request, 'osm/index.html', {'key1': 'value1'})
 
-def osm_index(request):
-    return my_render_to_response(request,
-                                 'osm/index.html',
-                                 {'key1': 'value1'})
+class OsmFirstView(View):
+    def get(self, request):
+        return my_render_to_response(
+            request, 'osm/ol2/first.html', {'key1': 'value1'})
 
+class OsmMarker1View(View):
+    def get(self, request):
+        return my_render_to_response(
+            request, 'osm/ol2/marker1.html', {'key1': 'value1'})
 
-def osm_first(request):
-    return my_render_to_response(
-        request,
-        'osm/ol2/first.html',
-        {'key1': 'value1'})
+class OsmMarker2View(View):
+    def get(self, request):
+        return my_render_to_response(
+        request, 'osm/ol2/marker2.html', {
+            'initialmarker_url': '/markerstorage/osm/ol2/marker2.json'})
 
+class OsmMarker2JsonView(View):
+    def get(self, request):
+        return my_render_to_response(
+            request, 'osm/ol2/marker2.json', {'key1': 'value1'})
 
-def osm_marker1(request):
-    return my_render_to_response(
-        request,
-        'osm/ol2/marker1.html',
-        {'key1': 'value1'})
+class OsmMarker3View(View):
+    def get(self, request):
+        ip = get_client_ip(request)
+        if -1 < ip.find("192.168.22."):
+            wspush_url = markerstorage_settings.WSPUSH_URL_INTRA
+        else:
+            wspush_url = markerstorage_settings.WSPUSH_URL
 
+        return my_render_to_response(
+            request,
+            'osm/ol2/marker3.html',
+            {'initialmarker_url': markerstorage_settings.INITIALMARKER_URL,
+            'wspush_url': wspush_url,
+            'wspush_recvtoken': markerstorage_settings.WSPUSH_RECVTOKEN,
+            })
 
-def osm_marker2(request):
-    return my_render_to_response(
-        request,
-        'osm/ol2/marker2.html',
-        {'initialmarker_url': '/markerstorage/osm/ol2/marker2.json'}
-        )
+class OsmTile1View(View):
+    def get(self, request):
+        return my_render_to_response(
+            request, 'osm/ol2/tile1.html', {'key1': 'value1'})
 
+class OsmTile1ImageView(View):
+    def get(self, request, tile_ver, tile_z, tile_x, tile_y):
+        response = HttpResponse()
+        response['Content-Type'] = 'image/png'
 
-def osm_marker2_json(request):
-    return my_render_to_response(
-        request,
-        'osm/ol2/marker2.json',
-        {'key1': 'value1'}
-        )
+        try:
+            filepath = '%s/static/images/%s' % (
+                markerstorage_settings.APP_ROOT,
+                'tiletest.png')
+            with open(filepath, 'rb') as f:
+                response.write(f.read())
+        except:
+            print(("EXCEPT: %s" % (sys.exc_info()[1])))
 
+        return response
 
-def osm_marker3(request):
-    ip = get_client_ip(request)
-    if -1 < ip.find("192.168.22."):
-        wspush_url = markerstorage_settings.WSPUSH_URL_INTRA
-    else:
-        wspush_url = markerstorage_settings.WSPUSH_URL
+class OsmOl5FirstView(View):
+    def get(self, request):
+        return my_render_to_response(
+            request, 'osm/ol5/first.html', {'key1': 'value1'})
 
-    return my_render_to_response(
-        request,
-        'osm/ol2/marker3.html',
-        {'initialmarker_url': markerstorage_settings.INITIALMARKER_URL,
-         'wspush_url': wspush_url,
-         'wspush_recvtoken': markerstorage_settings.WSPUSH_RECVTOKEN,
-         })
-
-
-def osm_tile1(request):
-    return my_render_to_response(
-        request,
-        'osm/ol2/tile1.html',
-        {'key1': 'value1'})
-
-
-def osm_tile1_image(request, tile_ver, tile_z, tile_x, tile_y):
-    response = HttpResponse()
-    response['Content-Type'] = 'image/png'
-
-    try:
-        filepath = '%s/static/images/%s' % (
-            markerstorage_settings.APP_ROOT,
-            'tiletest.png')
-        with open(filepath, 'rb') as f:
-            response.write(f.read())
-    except:
-        print(("EXCEPT: %s" % (sys.exc_info()[1])))
-
-    return response
-
-
-def osm_ol5_first(request):
-    return my_render_to_response(
-        request,
-        'osm/ol5/first.html',
-        {'key1': 'value1'})
-
-
-def osm_ol5_marker1(request):
-    return my_render_to_response(
-        request,
-        'osm/ol5/marker1.html',
-        {'key1': 'value1'})
+class OsmOl5Marker1View(View):
+    def get(self, request):
+        return my_render_to_response(
+            request, 'osm/ol5/marker1.html', {'key1': 'value1'})
 
 def my_render_to_response(request, template_file, paramdict):
     response = HttpResponse()
