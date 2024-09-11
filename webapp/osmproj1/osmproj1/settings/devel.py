@@ -12,8 +12,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
@@ -22,7 +21,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '61+#+hs6m9zg9wb!7obwk+w1!gdmyflegqg#(7!hvpho6l@6a$'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -106,8 +105,3 @@ SITE_NAME = 'markerstorage'
 
 STATIC_URL = '/static/%s/' % SITE_NAME
 STATIC_ROOT = '%s/static/' % SITE_ROOT
-
-try:
-    from .settings_devel import *
-except:
-    pass
