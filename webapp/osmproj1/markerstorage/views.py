@@ -8,7 +8,7 @@ from time import *
 import logging
 
 # pip install django
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.template import loader
 from django.template.loader import render_to_string
@@ -38,14 +38,11 @@ def error404(request):
     return render_to_response('404.html', {})
 
 
-class JSONResponse(HttpResponse):
-    """
-    An HttpResponse that renders its content into JSON.
-    """
-    def __init__(self, data, **kwargs):
-        content = json.dumps(data)
-        kwargs['content_type'] = 'application/json'
-        super(JSONResponse, self).__init__(content, **kwargs)
+#class JSONResponse(HttpResponse):
+#    def __init__(self, data, **kwargs):
+#        content = json.dumps(data)
+#        kwargs['content_type'] = 'application/json'
+#        super(JSONResponse, self).__init__(content, **kwargs)
 
 
 def convert_dict_demoarker(o):
@@ -115,10 +112,10 @@ class MarkerDataDetailView(View):
             _pass = request.GET.get('password', '')
 
             if _pass != markerstorage_settings.REST_PUT_PASSWORD:
-                return JSONResponse('', status=401)
+                return JSONResponse('{}', status=401)
         except:
             logger.warn('EXCEPT: fail password. (%s)' % sys.exc_info()[1])
-            return JSONResponse('', status=401)
+            return JSONResponse('{}', status=401)
 
         # insert or update
         try:
@@ -167,7 +164,7 @@ class MarkerDataDetailView(View):
                 _status = 200
                 _data = data
         except DemoMarker.DoesNotExist:
-            return HttpResponse(status=404)
+            return JSONResponse(status=404)
         except:
             logger.warn('EXCEPT: fail request data parse. (%s)' %
                         sys.exc_info()[1])
