@@ -7,6 +7,9 @@ import time
 from time import *
 import logging
 
+# pip install ws4py
+from ws4py.client.threadedclient import WebSocketClient
+
 # pip install django
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -14,19 +17,18 @@ from django.template import loader
 from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.views import View
+from django.apps import apps
 
-# pip install ws4py
-from ws4py.client.threadedclient import WebSocketClient
-
-from markerstorage import markerstorage_settings
 from .models import DemoMarker
 
-formatter = logging.Formatter(markerstorage_settings.LOG_FORMAT)
-h = logging.FileHandler(markerstorage_settings.LOG_PATH)
+app_settings = apps.get_app_config('markerstorage')
+
+formatter = logging.Formatter(app_settings.LOG_FORMAT)
+h = logging.FileHandler(app_settings.LOG_PATH)
 h.setFormatter(formatter)
 
-logger = logging.getLogger(markerstorage_settings.APP_NAME)
-logger.setLevel(markerstorage_settings.LOG_LEVEL)
+logger = logging.getLogger(app_settings.APP_NAME)
+logger.setLevel(app_settings.LOG_LEVEL)
 logger.addHandler(h)
 
 
@@ -36,13 +38,6 @@ def error500(request):
 
 def error404(request):
     return render_to_response('404.html', {})
-
-
-#class JSONResponse(HttpResponse):
-#    def __init__(self, data, **kwargs):
-#        content = json.dumps(data)
-#        kwargs['content_type'] = 'application/json'
-#        super(JSONResponse, self).__init__(content, **kwargs)
 
 
 def convert_dict_demoarker(o):
@@ -85,7 +80,7 @@ class MarkerDataListView(View):
     def get(self, request):
         _qs = DemoMarker.objects.all().order_by('-pk')
         _datas = convert_dict_demoarkers(_qs)
-        return JSONResponse(_datas)
+        return JsonResponse(_datas, safe=False)
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -111,7 +106,7 @@ class MarkerDataDetailView(View):
         try:
             _pass = request.GET.get('password', '')
 
-            if _pass != markerstorage_settings.REST_PUT_PASSWORD:
+            if _pass != app_settings.REST_PUT_PASSWORD:
                 return JSONResponse('{}', status=401)
         except:
             logger.warn('EXCEPT: fail password. (%s)' % sys.exc_info()[1])
@@ -206,16 +201,16 @@ class OsmMarker3View(View):
     def get(self, request):
         ip = get_client_ip(request)
         if -1 < ip.find("192.168.22."):
-            wspush_url = markerstorage_settings.WSPUSH_URL_INTRA
+            wspush_url = app_settings.WSPUSH_URL_INTRA
         else:
-            wspush_url = markerstorage_settings.WSPUSH_URL
+            wspush_url = app_settings.WSPUSH_URL
 
         return my_render_to_response(
             request,
             'osm/ol2/marker3.html',
-            {'initialmarker_url': markerstorage_settings.INITIALMARKER_URL,
+            {'initialmarker_url': app_settings.INITIALMARKER_URL,
             'wspush_url': wspush_url,
-            'wspush_recvtoken': markerstorage_settings.WSPUSH_RECVTOKEN,
+            'wspush_recvtoken': app_settings.WSPUSH_RECVTOKEN,
             })
 
 class OsmTile1View(View):
@@ -229,13 +224,15 @@ class OsmTile1ImageView(View):
         response['Content-Type'] = 'image/png'
 
         try:
+            _dir = os.path.realpath(os.path.dirname(__file__))
             filepath = '%s/static/images/%s' % (
-                markerstorage_settings.APP_ROOT,
+                _dir,
                 'tiletest.png')
             with open(filepath, 'rb') as f:
                 response.write(f.read())
-        except:
-            print(("EXCEPT: %s" % (sys.exc_info()[1])))
+        except Exception as e:
+            print("EXCEPT: %s" % e)
+            return HttpResponse(status=404)
 
         return response
 
@@ -251,7 +248,7 @@ class OsmOl5Marker1View(View):
 
 def my_render_to_response(request, template_file, paramdict):
     response = HttpResponse()
-    paramdict['mount_prefix'] = markerstorage_settings.MOUNT_PREFIX
+    paramdict['mount_prefix'] = app_settings.MOUNT_PREFIX
 
     _gen_html = render_to_string(template_file,
                                  context=paramdict,
@@ -275,7 +272,7 @@ class DummyClient(WebSocketClient):
     def opened(self):
         senddata = {'func': 'auth',
                     'param': {
-                        'token': markerstorage_settings.WSPUSH_SENDTOKEN}
+                        'token': app_settings.WSPUSH_SENDTOKEN}
                     }
         self.send(json.dumps(senddata).encode())
 
@@ -318,13 +315,13 @@ def notify_websocket(datalist):
     count = 0
 
     try:
-        ws = DummyClient(markerstorage_settings.WSPUSH_URL_INTRA,
+        ws = DummyClient(app_settings.WSPUSH_URL_INTRA,
                          protocols=['http-only', 'chat'])
         ws.connect()
 
-        while(count < markerstorage_settings.WSPUSH_POLLING_WAIT_MAXCOUNT):
+        while(count < app_settings.WSPUSH_POLLING_WAIT_MAXCOUNT):
             if ws.is_auth() < 0:
-                sleep(markerstorage_settings.WSPUSH_POLLING_WAIT_SPAN)
+                sleep(app_settings.WSPUSH_POLLING_WAIT_SPAN)
                 count = count + 1
             elif 0 == ws.is_auth():
                 raise('fail auth websocket server.')
