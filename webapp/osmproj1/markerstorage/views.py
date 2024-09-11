@@ -97,7 +97,7 @@ class MarkerDataDetailView(View):
             return HttpResponse(status=404)
 
         _data = convert_dict_demoarker(_o)
-        return JSONResponse(_data)
+        return JsonResponse(_data)
 
     def post(self, request, pk):
         logger.debug('POST (pk=%s)' % pk)
@@ -107,10 +107,10 @@ class MarkerDataDetailView(View):
             _pass = request.GET.get('password', '')
 
             if _pass != app_settings.REST_PUT_PASSWORD:
-                return JSONResponse('{}', status=401)
+                return JsonResponse('{}', status=401)
         except:
             logger.warn('EXCEPT: fail password. (%s)' % sys.exc_info()[1])
-            return JSONResponse('{}', status=401)
+            return JsonResponse('{}', status=401)
 
         # insert or update
         try:
@@ -159,13 +159,13 @@ class MarkerDataDetailView(View):
                 _status = 200
                 _data = data
         except DemoMarker.DoesNotExist:
-            return JSONResponse(status=404)
+            return Jsonesponse(status=404)
         except:
             logger.warn('EXCEPT: fail request data parse. (%s)' %
                         sys.exc_info()[1])
-            return JSONResponse('{}', status=400)
+            return JsonResponse('{}', status=400)
 
-        return JSONResponse(data=_data, status=_status)
+        return JsonResponse(data=_data, status=_status)
 
     #def delete(self):
     #    snippet.delete()
