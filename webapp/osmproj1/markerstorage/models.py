@@ -1,8 +1,6 @@
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
 
 
-@python_2_unicode_compatible
 class MarkerBase(models.Model):
     id = models.AutoField(primary_key=True)
     create_dt = models.DateTimeField(auto_now_add=True)
@@ -21,7 +19,6 @@ class MarkerBase(models.Model):
         return '%s - %s' % (self.id, self.name)
 
 
-@python_2_unicode_compatible
 class DemoMarker(MarkerBase):
     class Meta:
         ordering = ['-update_dt']

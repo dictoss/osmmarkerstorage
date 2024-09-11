@@ -1,4 +1,4 @@
-from django.conf.urls import include, url
+from django.urls import include, path
 
 from django.contrib import admin
 admin.autodiscover()
@@ -8,6 +8,6 @@ urlpatterns = [
     # url(r'^$', 'osmproj1.views.home', name='home'),
     # url(r'^blog/', include('blog.urls')),
 
-    url(r'^admin/', admin.site.urls),
-    url(r'^markerstorage/', include('markerstorage.urls')),
+    path('admin/', admin.site.urls),
+    path('markerstorage/', include('markerstorage.urls')),
 ]
